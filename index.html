@@ -16,7 +16,7 @@
           <h1>Invoicing System</h1>
         </div>
       </div>
-      <form id="loginForm" class="login-form">
+      <form id="loginForm" class="login-form" onsubmit="return window.handleLoginSubmit ? window.handleLoginSubmit(event) : false;">
         <label>
           Role
           <select id="loginRole">
@@ -313,6 +313,6 @@
   </dialog>
 
   <div id="toast" class="toast" hidden></div>
-  <script src="app.js"></script>
+  <script src="app.js?v=20260602-login-fix"></script>
 </body>
 </html>
