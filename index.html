@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NDIS Subcontractor Invoicing</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="loginView" class="login-shell">
+    <section class="login-panel">
+      <div class="brand-block">
+        <div class="brand-mark">IS</div>
+        <div>
+          <p class="eyebrow">Subcontractor billing</p>
+          <h1>Invoicing System</h1>
+        </div>
+      </div>
+      <form id="loginForm" class="login-form">
+        <label>
+          Role
+          <select id="loginRole">
+            <option value="manager">Manager</option>
+            <option value="account">Account</option>
+            <option value="staff">Staff</option>
+          </select>
+        </label>
+        <label>
+          Username
+          <input id="loginUser" autocomplete="username" value="manager">
+        </label>
+        <label>
+          Password
+          <input id="loginPass" type="password" autocomplete="current-password" value="manager123">
+        </label>
+        <button class="primary-action" type="submit">Sign in</button>
+        <p id="loginError" class="form-error" hidden></p>
+      </form>
+      <div class="credential-strip">
+        <span>Manager: manager / manager123</span>
+        <span>Account: account / account123</span>
+        <span>Staff: staff / staff123</span>
+      </div>
+    </section>
+  </main>
+
+  <main id="appView" class="app-shell" hidden>
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <div class="brand-mark compact">IS</div>
+        <div>
+          <strong>Invoice Desk</strong>
+          <span id="roleBadge">Manager</span>
+        </div>
+      </div>
+      <nav class="nav-list" aria-label="Main navigation">
+        <button data-view="dashboard" class="active" title="Dashboard">Dashboard</button>
+        <button data-view="invoice" title="Invoice builder">Invoice</button>
+        <button data-view="providers" title="Provider rates">Providers</button>
+        <button data-view="shifts" title="Shift entries">Shifts</button>
+        <button data-view="expenses" title="Expenses">Expenses</button>
+        <button data-view="payments" title="Payments">Payments</button>
+        <button data-view="claim" title="NDIS claim export">Claim Export</button>
+        <button data-view="settings" title="Settings">Settings</button>
+      </nav>
+      <button id="logoutBtn" class="ghost-action">Sign out</button>
+    </aside>
+
+    <section class="main-area">
+      <header class="topbar">
+        <div>
+          <p id="todayStamp" class="eyebrow"></p>
+          <h2 id="viewTitle">Dashboard</h2>
+        </div>
+        <div class="top-actions">
+          <button id="syncBtn" class="icon-button" title="Sync with Google Sheet">Sync</button>
+          <button id="printBtn" class="icon-button" title="Print invoice">Print</button>
+        </div>
+      </header>
+
+      <section id="dashboardView" class="view active-view">
+        <div class="metric-grid">
+          <article class="metric-card">
+            <span>Total outstanding</span>
+            <strong id="metricOutstanding">$0.00</strong>
+          </article>
+          <article class="metric-card">
+            <span>This fortnight</span>
+            <strong id="metricFortnight">$0.00</strong>
+          </article>
+          <article class="metric-card">
+            <span>Pending shifts</span>
+            <strong id="metricPending">0</strong>
+          </article>
+          <article class="metric-card">
+            <span>Paid received</span>
+            <strong id="metricPaid">$0.00</strong>
+          </article>
+          <article class="metric-card">
+            <span>Providers</span>
+            <strong id="metricProviders">0</strong>
+          </article>
+        </div>
+        <div class="dashboard-grid">
+          <section class="panel">
+            <div class="panel-head">
+              <h3>Provider earnings</h3>
+              <button id="newInvoiceFromDashboard" class="secondary-action">New invoice</button>
+            </div>
+            <div id="providerBars" class="bars"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <h3>Recent invoices</h3>
+              <span id="invoiceCount" class="soft-label">0 saved</span>
+            </div>
+            <div id="recentInvoices" class="record-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="invoiceView" class="view">
+        <div class="invoice-workspace">
+          <section class="panel editor-panel">
+            <div class="panel-head">
+              <h3>Build invoice</h3>
+              <button id="saveInvoiceBtn" class="primary-action">Save invoice</button>
+            </div>
+            <div class="form-grid">
+              <label>Provider <select id="invoiceProvider"></select></label>
+              <label>Staff <select id="invoiceStaff"></select></label>
+              <label>Invoice no. <input id="invoiceNumber"></label>
+              <label>Issue date <input id="invoiceIssueDate" type="date"></label>
+              <label>Due date <input id="invoiceDueDate" type="date"></label>
+              <label>Period start <input id="periodStart" type="date"></label>
+              <label>Period end <input id="periodEnd" type="date"></label>
+              <label>Status
+                <select id="invoiceStatus">
+                  <option>Draft</option>
+                  <option>Sent</option>
+                  <option>Part Paid</option>
+                  <option>Unpaid</option>
+                  <option>Paid</option>
+                </select>
+              </label>
+              <label>Invoice notes <input id="invoiceNotes" placeholder="Internal payment or re-entry notes"></label>
+            </div>
+            <div class="button-row">
+              <button id="addShiftBtn" class="secondary-action">Add shift</button>
+              <button id="addExpenseBtn" class="secondary-action">Add expense</button>
+              <button id="clearInvoiceBtn" class="ghost-action">Clear</button>
+            </div>
+            <div id="invoiceLineEditor" class="line-editor"></div>
+          </section>
+          <section class="invoice-paper" id="invoicePaper">
+            <div id="invoiceHeader" class="invoice-header has-image">
+              <img id="invoiceHeaderImage" src="invoice-header.png" alt="Invoice header">
+              <div class="header-upload" id="headerUploadArea">
+                <input id="headerImageInput" type="file" accept="image/*" hidden>
+                <button id="headerUploadBtn" class="ghost-action" type="button">Use attached header</button>
+              </div>
+              <div class="invoice-title-block">
+                <h2>TAX INVOICE</h2>
+                <p id="invoiceHeaderProvider">Provider billing statement</p>
+              </div>
+            </div>
+            <div class="invoice-meta">
+              <div>
+                <strong>From</strong>
+                <p id="paperBusiness"></p>
+              </div>
+              <div>
+                <strong>Bill to</strong>
+                <p id="paperProvider"></p>
+              </div>
+              <div>
+                <strong>Invoice details</strong>
+                <p id="paperInvoiceMeta"></p>
+              </div>
+              <div>
+                <strong>Payment details</strong>
+                <p id="paperPaymentDetails"></p>
+              </div>
+            </div>
+            <table class="invoice-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Participant / Service / Notes</th>
+                  <th>Hours</th>
+                  <th>Hourly rate</th>
+                  <th>Transport</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody id="paperLines"></tbody>
+            </table>
+            <div class="invoice-totals">
+              <dl>
+                <div><dt>Hourly total</dt><dd id="paperHourly">$0.00</dd></div>
+                <div><dt>Transport</dt><dd id="paperTransport">$0.00</dd></div>
+                <div><dt>Expenses</dt><dd id="paperExpenses">$0.00</dd></div>
+                <div><dt>GST</dt><dd id="paperGst">$0.00</dd></div>
+                <div><dt>Paid</dt><dd id="paperPaid">$0.00</dd></div>
+                <div><dt>Unpaid</dt><dd id="paperUnpaid">$0.00</dd></div>
+                <div class="grand-total"><dt>Total due</dt><dd id="paperGrand">$0.00</dd></div>
+              </dl>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="providersView" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Provider rate matrix</h3>
+            <button id="addProviderBtn" class="primary-action">Add provider</button>
+          </div>
+          <div id="providerCards" class="provider-grid"></div>
+        </section>
+      </section>
+
+      <section id="shiftsView" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Shift register</h3>
+            <button id="quickShiftBtn" class="primary-action">Add shift</button>
+          </div>
+          <div id="shiftTable" class="data-table-wrap"></div>
+        </section>
+      </section>
+
+      <section id="expensesView" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Expenses</h3>
+            <button id="quickExpenseBtn" class="primary-action">Add expense</button>
+          </div>
+          <div id="expenseTable" class="data-table-wrap"></div>
+        </section>
+      </section>
+
+      <section id="paymentsView" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Payments</h3>
+            <button id="quickPaymentBtn" class="primary-action">Add payment</button>
+          </div>
+          <div id="paymentTable" class="data-table-wrap"></div>
+        </section>
+      </section>
+
+      <section id="claimView" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>NDIS claim export</h3>
+            <button id="copyClaimBtn" class="secondary-action">Copy rows</button>
+          </div>
+          <div id="claimExportTable" class="data-table-wrap"></div>
+        </section>
+      </section>
+
+      <section id="settingsView" class="view">
+        <section class="panel settings-panel">
+          <div class="panel-head">
+            <h3>Google Sheet connection</h3>
+            <span id="syncState" class="soft-label">Local mode</span>
+          </div>
+          <label>Apps Script Web App URL <input id="sheetEndpoint" placeholder="https://script.google.com/macros/s/.../exec"></label>
+          <div class="form-grid">
+            <label>Business name <input id="businessName"></label>
+            <label>ABN <input id="businessAbn"></label>
+            <label>Email <input id="businessEmail"></label>
+            <label>Phone <input id="businessPhone"></label>
+            <label>Address <input id="businessAddress"></label>
+            <label>Payment terms days <input id="paymentTermsDays" type="number"></label>
+            <label>Bank name <input id="bankName"></label>
+            <label>BSB <input id="bankBsb"></label>
+            <label>Account number <input id="bankAccount"></label>
+            <label>GST registered?
+              <select id="gstRegistered">
+                <option>No</option>
+                <option>Yes</option>
+              </select>
+            </label>
+          </div>
+          <div class="button-row">
+            <button id="saveSettingsBtn" class="primary-action">Save connection</button>
+            <button id="exportJsonBtn" class="secondary-action">Download backup</button>
+            <button id="resetDemoBtn" class="ghost-action">Reload sample data</button>
+          </div>
+          <details>
+            <summary>Google Apps Script connector</summary>
+            <pre id="scriptSnippet"></pre>
+          </details>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="recordDialog">
+    <form method="dialog" id="recordForm">
+      <header>
+        <h3 id="dialogTitle">Record</h3>
+        <button class="icon-only" value="cancel" aria-label="Close" type="submit">x</button>
+      </header>
+      <div id="dialogFields" class="dialog-fields"></div>
+      <footer>
+        <button class="ghost-action" value="cancel">Cancel</button>
+        <button id="dialogSaveBtn" class="primary-action" value="default">Save</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>
